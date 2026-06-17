@@ -1,4 +1,7 @@
-#include "chart.h"
+#include "datasource.h"
+#include "histogram.h"
+#include "linechart.h"
+#include "piechart.h"
 
 #include <QApplication>
 #include <QMainWindow>
@@ -9,11 +12,8 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QInputDialog>
-#include <QTableWidget>
-#include <QHeaderView>
 #include <QStatusBar>
 #include <QLabel>
-#include <QSplitter>
 #include <QFrame>
 #include <QGroupBox>
 #include <QStyle>
@@ -46,25 +46,6 @@ static const char *APP_STYLE = R"(
         color: #FFFFFF;
         border-color: #2E6096;
     }
-    QTableWidget {
-        background-color: #FFFFFF;
-        border: 1px solid #D8DCE4;
-        border-radius: 4px;
-        gridline-color: #EAECF0;
-        font-size: 12px;
-    }
-    QTableWidget::item {
-        padding: 3px 8px;
-    }
-    QHeaderView::section {
-        background-color: #EEF1F7;
-        border: none;
-        border-bottom: 2px solid #D8DCE4;
-        padding: 6px 10px;
-        font-weight: bold;
-        font-size: 12px;
-        color: #555555;
-    }
     QStatusBar {
         background-color: #EEF1F7;
         border-top: 1px solid #D8DCE4;
@@ -85,10 +66,6 @@ static const char *APP_STYLE = R"(
         subcontrol-origin: margin;
         left: 12px;
         padding: 0 6px;
-    }
-    QSplitter::handle {
-        background-color: #D8DCE4;
-        height: 2px;
     }
 )";
 
@@ -155,10 +132,7 @@ int main(int argc, char *argv[])
 
     mainLayout->addWidget(toolGroup);
 
-    // ========== 上下分割器：图表区 + 数据表 ==========
-    QSplitter *splitter = new QSplitter(Qt::Vertical);
-
-    // 图表显示区域（占据大部分空间）
+    // ========== 图表显示区域 ==========
     QWidget *chartContainer = new QWidget();
     QVBoxLayout *chartContainerLayout = new QVBoxLayout(chartContainer);
     chartContainerLayout->setContentsMargins(0, 0, 0, 0);
@@ -169,56 +143,7 @@ int main(int argc, char *argv[])
     chartView->setDataSource(dataSource);
     chartContainerLayout->addWidget(chartView);
 
-    splitter->addWidget(chartContainer);
-
-    // 底部数据表格
-    QWidget *tableContainer = new QWidget();
-    QVBoxLayout *tableLayout = new QVBoxLayout(tableContainer);
-    tableLayout->setContentsMargins(0, 4, 0, 0);
-
-    QLabel *tableTitle = new QLabel("📋 当前数据");
-    tableTitle->setStyleSheet("font-weight:bold; font-size:13px; color:#444; padding:2px 4px;");
-    tableLayout->addWidget(tableTitle);
-
-    QTableWidget *dataTable = new QTableWidget();
-    dataTable->setColumnCount(2);
-    dataTable->setHorizontalHeaderLabels({"序号", "数值"});
-    dataTable->setRowCount(0);
-    dataTable->setMaximumHeight(160);
-    dataTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    dataTable->setSelectionBehavior(QAbstractItemView::SelectRows);
-    dataTable->setAlternatingRowColors(true);
-    dataTable->horizontalHeader()->setStretchLastSection(true);
-    dataTable->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
-    dataTable->verticalHeader()->setVisible(false);
-
-    // 刷新数据表的函数
-    auto refreshDataTable = [dataSource, dataTable]() {
-        const QVector<double> &d = dataSource->data();
-        dataTable->setRowCount(d.size());
-        for (int i = 0; i < d.size(); ++i) {
-            // 序号
-            QTableWidgetItem *indexItem = new QTableWidgetItem(QString::number(i + 1));
-            indexItem->setTextAlignment(Qt::AlignCenter);
-            dataTable->setItem(i, 0, indexItem);
-            // 数值
-            QTableWidgetItem *valueItem = new QTableWidgetItem(
-                QString::number(d[i], 'f', 1));
-            valueItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-            dataTable->setItem(i, 1, valueItem);
-        }
-    };
-    // 初始加载
-    refreshDataTable();
-
-    tableLayout->addWidget(dataTable);
-    splitter->addWidget(tableContainer);
-
-    // 设置分割比例（图表占 75%，表格占 25%）
-    splitter->setStretchFactor(0, 3);
-    splitter->setStretchFactor(1, 1);
-
-    mainLayout->addWidget(splitter, 1);
+    mainLayout->addWidget(chartContainer, 1);
 
     // ========== 状态栏 ==========
     QStatusBar *statusBar = w.statusBar();
@@ -265,9 +190,8 @@ int main(int argc, char *argv[])
     // 初始高亮柱状图
     highlightChartButton(btnHist);
 
-    // ========== 数据变更 → 刷新表格和状态栏 ==========
+    // ========== 数据变更 → 刷新状态栏 ==========
     QObject::connect(dataSource, &DataSource::dataChanged, [&]() {
-        refreshDataTable();
         refreshStatusBar();
     });
 
