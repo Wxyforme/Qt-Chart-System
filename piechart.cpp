@@ -1,6 +1,6 @@
 #include "piechart.h"
 
-// ==================== 饼图 PieChart 实现 ====================
+//饼图 PieChart 实现
 PieChart::PieChart(QWidget *parent)
     : Chart("饼图", QColor(0xEE, 0xAA, 0x00), parent)
 {}

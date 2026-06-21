@@ -1,6 +1,6 @@
 #include "histogram.h"
 
-// ==================== 柱状图 Histogram 实现 ====================
+//柱状图 Histogram 实现
 Histogram::Histogram(QWidget *parent)
     : Chart("柱状图", QColor::fromHsl(0, 200, 120), parent)
 {}

@@ -1,6 +1,6 @@
 QT += widgets
 
-CONFIG += c++17
+CONFIG += c++11
 
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -12,16 +12,19 @@ SOURCES += \
     histogram.cpp \
     linechart.cpp \
     piechart.cpp \
-    main.cpp
+    main.cpp \
+    mainwindow.cpp
 
 HEADERS += \
     chart.h \
     datasource.h \
     histogram.h \
     linechart.h \
-    piechart.h
+    piechart.h \
+    mainwindow.h
 
-FORMS +=
+FORMS += \
+    mainwindow.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

@@ -1,19 +1,16 @@
 #include "chart.h"
-
-#include <QFont>
-#include <QPen>
-#include <QBrush>
+#include <QPainter>
 #include <QPainterPath>
 
-// ==================== Chart 基类实现 ====================
+//Chart 基类实现
 Chart::Chart(QWidget *parent)
-    : QWidget(parent), title("默认图表"), color(Qt::blue), m_dataSource(nullptr)
+    : QWidget(parent), title("默认图表"), color(Qt::blue), m_dataSource(0), m_margin(70)
 {
     setMinimumSize(700, 500);
 }
 
 Chart::Chart(QString t, QColor c, QWidget *parent)
-    : QWidget(parent), title(t), color(c), m_dataSource(nullptr)
+    : QWidget(parent), title(t), color(c), m_dataSource(0), m_margin(70)
 {
     setMinimumSize(700, 500);
 }
@@ -34,19 +31,22 @@ void Chart::setDataSource(DataSource *ds)
 {
     // 断开旧数据源连接
     if (m_dataSource) {
-        disconnect(m_dataSource, &DataSource::dataChanged, this, nullptr);
+        disconnect(m_dataSource, &DataSource::dataChanged, this, 0);
     }
 
     m_dataSource = ds;
 
     // 连接新数据源：数据变更 → 自动重绘图表
     if (m_dataSource) {
-        connect(m_dataSource, &DataSource::dataChanged, this, [this]() {
-            update();
-        });
+        connect(m_dataSource, &DataSource::dataChanged, this, &Chart::onDataChanged);
     }
 
     update();  // 立即重绘以反映新数据
+}
+
+void Chart::onDataChanged()
+{
+    update();
 }
 
 void Chart::paintEvent(QPaintEvent *)

@@ -3,14 +3,13 @@
 
 #include <QWidget>
 #include <QPainter>
-#include <QColor>
 #include <QString>
 #include <QRectF>
 #include <QtMath>
 
 #include "datasource.h"
 
-// ============ 抽象图表基类（继承 QWidget，具备绘图能力）============
+//抽象图表基类（继承 QWidget，具备绘图能力）
 class Chart : public QWidget
 {
     Q_OBJECT
@@ -18,11 +17,11 @@ protected:
     QString title;
     QColor color;
     DataSource *m_dataSource;  // 数据源指针（由外部注入）
-    int m_margin = 70;         // 图表区域四周留白
+    int m_margin;              // 图表区域四周留白
 
 public:
-    explicit Chart(QWidget *parent = nullptr);
-    Chart(QString t, QColor c, QWidget *parent = nullptr);
+    explicit Chart(QWidget *parent = 0);
+    Chart(QString t, QColor c, QWidget *parent = 0);
 
     void setTitle(QString t);
     void setColor(QColor c);
@@ -34,9 +33,13 @@ public:
     virtual void draw(QPainter &painter) = 0;
 
 protected:
-    void paintEvent(QPaintEvent *) override;
-    virtual ~Chart() = default;
+    virtual void paintEvent(QPaintEvent *);
+    virtual ~Chart() {}
 
+private slots:
+    void onDataChanged();
+
+protected:
     // ---- 布局辅助 ----
     QRectF chartArea() const;
 
@@ -50,4 +53,4 @@ protected:
     static QColor sliceColor(int index, int total);
 };
 
-#endif // CHART_H
+#endif

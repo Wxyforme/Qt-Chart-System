@@ -2,7 +2,7 @@
 
 #include <QPainterPath>
 
-// ==================== 折线图 LineChart 实现 ====================
+//折线图 LineChart 实现
 LineChart::LineChart(QWidget *parent)
     : Chart("折线图", QColor::fromHsl(140, 200, 100), parent)
 {}
