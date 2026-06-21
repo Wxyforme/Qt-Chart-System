@@ -1,16 +1,19 @@
 ================================================================================
-                    面向对象图表生成系统（Qt版）
-                    Object-Oriented Chart Generation System
+                    面向对象图表生成系统（Qt Designer版）
+                    Object-Oriented Chart Generation System — Qt6 / C++17
 ================================================================================
 
 一、项目简介
 --------------------------------------------------------------------------------
 
-本项目是一个基于 Qt 的桌面图表生成工具，采用面向对象多态架构设计。系统定义了
-一个抽象图表基类 Chart，通过 Template Method 模式将 QPainter 初始化与具体绘制
-解耦，派生出柱状图（Histogram）、折线图（LineChart）和饼图（PieChart）三种
-图表类型。三种图表共享一个 DataSource 数据源，数据变更时通过 Qt 信号-槽机制
+本项目是一个基于 Qt 6 + Qt Designer 的桌面图表生成工具，采用面向对象多态架构设计。
+系统定义了一个抽象图表基类 Chart，通过 Template Method 模式将 QPainter 初始化与
+具体绘制解耦，派生出柱状图（Histogram）、折线图（LineChart）和饼图（PieChart）
+三种图表类型。三种图表共享一个 DataSource 数据源，数据变更时通过 Qt 信号-槽机制
 自动刷新所有关联图表，实现了典型的观察者模式。
+
+用户界面采用 Qt Designer .ui 表单构建静态布局，通过 MainWindow 类管理动态行为，
+实现了界面与逻辑的分离，可直接在 Qt Designer 中可视化编辑窗口布局。
 
 
 二、运行环境与依赖
@@ -131,22 +134,35 @@
 七、项目架构说明
 --------------------------------------------------------------------------------
 
+架构图：
+
+  DataSource (QObject)           ← 数据存储、文件读取、随机生成、信号发射
+      │  raw pointer
+      ▼
+  Chart (abstract QWidget)       ← Template Method: paintEvent() → virtual draw()
+      ├── Histogram              ← 柱状图：圆角矩形柱体 + 渐变色
+      ├── LineChart              ← 折线图：折线 + 面积填充 + 数据点
+      └── PieChart               ← 饼图：HSL 扇区 + 图例 + 中心装饰
+
+  MainWindow (QMainWindow)       ← Qt Designer .ui 表单 + 信号槽逻辑
+      └── mainwindow.ui          ← 静态布局（可 Qt Designer 可视化编辑）
+
 文件结构：
-  chart-project.pro   — qmake 工程文件
-  datasource.h/.cpp   — 数据源类（数据存储、文件读取、随机生成、统计）
-  chart.h/.cpp        — 抽象图表基类（QPainter 初始化、坐标轴/网格/标题绘制）
-  histogram.h/.cpp    — 柱状图实现
-  linechart.h/.cpp    — 折线图实现
-  piechart.h/.cpp     — 饼图实现
-  main.cpp            — 主窗口、工具栏、按钮逻辑、样式表
+
+  chart-project.pro              — qmake 工程文件 (Qt6, C++17, widgets 模块)
+  mainwindow.ui                  — Qt Designer 表单：主窗口静态布局
+  mainwindow.h                   — MainWindow 类声明 (QMainWindow 子类)
+  mainwindow.cpp                 — 信号槽连接、图表切换、状态栏刷新、数据操作
+  main.cpp                       — 程序入口：QApplication、全局样式表
+  datasource.h / datasource.cpp  — DataSource 数据源类
+  chart.h / chart.cpp            — Chart 抽象基类：paintEvent、坐标轴、网格、标题
+  histogram.h / histogram.cpp    — Histogram 柱状图绘制
+  linechart.h / linechart.cpp    — LineChart 折线图绘制
+  piechart.h / piechart.cpp      — PieChart 饼图绘制
 
 设计模式：
+
   - Template Method：Chart::paintEvent() → 子类 draw()
-  - Observer（Qt 信号-槽）：DataSource::dataChanged → Chart::update()
+  - Observer（Qt 信号-槽）：DataSource::dataChanged → Chart::update() + 状态栏刷新
   - 多态：Chart* 指针统一管理不同图表子类实例
-
-
-八、许可证
---------------------------------------------------------------------------------
-
-本项目为学习演示用途，无特定开源许可证约束。
+  - UI/逻辑分离：.ui 表单定义静态布局，MainWindow 管理动态行为
