@@ -8,8 +8,8 @@ class Histogram : public Chart
 {
     Q_OBJECT
 public:
-    explicit Histogram(QWidget *parent = 0);
-    Histogram(QString t, QColor c, QWidget *parent = 0);
+    explicit Histogram(QWidget *parent = nullptr);
+    Histogram(QString t, QColor c, QWidget *parent = nullptr);
     virtual void draw(QPainter &painter);
 };
 

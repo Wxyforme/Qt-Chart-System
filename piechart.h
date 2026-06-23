@@ -8,8 +8,8 @@ class PieChart : public Chart
 {
     Q_OBJECT
 public:
-    explicit PieChart(QWidget *parent = 0);
-    PieChart(QString t, QColor c, QWidget *parent = 0);
+    explicit PieChart(QWidget *parent = nullptr);
+    PieChart(QString t, QColor c, QWidget *parent = nullptr);
     virtual void draw(QPainter &painter);
 };
 

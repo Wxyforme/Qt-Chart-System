@@ -17,12 +17,12 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
-    , m_dataSource(0)
-    , m_chartView(0)
-    , m_statusCount(0)
-    , m_statusSum(0)
-    , m_statusMin(0)
-    , m_statusMax(0)
+    , m_dataSource(nullptr)
+    , m_chartView(nullptr)
+    , m_statusCount(nullptr)
+    , m_statusSum(nullptr)
+    , m_statusMin(nullptr)
+    , m_statusMax(nullptr)
 {
     ui->setupUi(this);
 
@@ -33,9 +33,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     // ---- 数据源（预置初始数据）----
     m_dataSource = new DataSource(this);
-    QVector<double> initData;
-    initData << 25 << 48 << 32 << 60 << 42 << 55 << 38 << 70 << 29 << 51;
-    m_dataSource->setData(initData);
+    m_dataSource->setData({25, 48, 32, 60, 42, 55, 38, 70, 29, 51});
 
     // ---- 初始图表 ----
     setupChart();
@@ -57,9 +55,7 @@ MainWindow::MainWindow(QWidget *parent)
     refreshStatusBar();
 
     // ---- 图表按钮列表（用于高亮管理）----
-    m_chartButtons.append(ui->btnHistogram);
-    m_chartButtons.append(ui->btnLineChart);
-    m_chartButtons.append(ui->btnPieChart);
+    m_chartButtons = {ui->btnHistogram, ui->btnLineChart, ui->btnPieChart};
     highlightChartButton(ui->btnHistogram);
 
     // ==================== 信号连接 ====================
@@ -68,9 +64,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_dataSource, &DataSource::dataChanged, this, &MainWindow::refreshStatusBar);
 
     // 数据操作按钮
-    connect(ui->btnLoad,   &QPushButton::clicked, this, &MainWindow::onLoadFile);
-    connect(ui->btnRandom, &QPushButton::clicked, this, &MainWindow::onRandomGenerate);
-    connect(ui->btnClear,  &QPushButton::clicked, this, &MainWindow::onClearData);
+    connect(ui->btnLoad,        &QPushButton::clicked, this, &MainWindow::onLoadFile);
+    connect(ui->btnLoadLabeled, &QPushButton::clicked, this, &MainWindow::onLoadLabeledFile);
+    connect(ui->btnRandom,      &QPushButton::clicked, this, &MainWindow::onRandomGenerate);
+    connect(ui->btnClear,       &QPushButton::clicked, this, &MainWindow::onClearData);
 
     // 图表类型切换按钮（统一走 onChartTypeClicked 分发）
     connect(ui->btnHistogram,  &QPushButton::clicked, this, &MainWindow::onChartTypeClicked);
@@ -99,7 +96,7 @@ void MainWindow::onChartTypeClicked()
     QPushButton *btn = qobject_cast<QPushButton*>(sender());
     if (!btn) return;
 
-    Chart *newChart = 0;
+    Chart *newChart = nullptr;
 
     if (btn == ui->btnHistogram) {
         newChart = new Histogram(ui->chartContainer);
@@ -119,7 +116,7 @@ void MainWindow::switchChart(Chart *newChart, QPushButton *activeBtn)
     if (m_chartView) {
         ui->chartContainer->layout()->removeWidget(m_chartView);
         m_chartView->deleteLater();
-        m_chartView = 0;
+        m_chartView = nullptr;
     }
     m_chartView = newChart;
     m_chartView->setDataSource(m_dataSource);
@@ -129,8 +126,7 @@ void MainWindow::switchChart(Chart *newChart, QPushButton *activeBtn)
 
 void MainWindow::highlightChartButton(QPushButton *active)
 {
-    for (int i = 0; i < m_chartButtons.size(); ++i) {
-        QPushButton *btn = m_chartButtons[i];
+    for (auto *btn : m_chartButtons) {
         btn->setProperty("active", btn == active ? "true" : "false");
         btn->style()->unpolish(btn);
         btn->style()->polish(btn);
@@ -150,6 +146,21 @@ void MainWindow::onLoadFile()
     if (filePath.isEmpty()) return;
 
     if (!m_dataSource->loadFromFile(filePath)) {
+        QMessageBox::warning(this, "加载失败", m_dataSource->lastError());
+    }
+}
+
+void MainWindow::onLoadLabeledFile()
+{
+    QString filePath = QFileDialog::getOpenFileName(
+        this,
+        "选择带标签的数据文件",
+        "",
+        "CSV 文件 (*.csv);;文本文件 (*.txt);;所有文件 (*)"
+    );
+    if (filePath.isEmpty()) return;
+
+    if (!m_dataSource->loadFromLabeledFile(filePath)) {
         QMessageBox::warning(this, "加载失败", m_dataSource->lastError());
     }
 }
@@ -174,8 +185,7 @@ void MainWindow::onRandomGenerate()
 
 void MainWindow::onClearData()
 {
-    QVector<double> emptyData;
-    m_dataSource->setData(emptyData);
+    m_dataSource->setData({});
 }
 
 //状态栏刷新
@@ -188,7 +198,8 @@ void MainWindow::refreshStatusBar()
         m_statusMin->setText("最小值: —");
         m_statusMax->setText("最大值: —");
     } else {
-        m_statusCount->setText(QString("数据条数: %1").arg(n));
+        QString typeTag = m_dataSource->hasLabels() ? "[标签]" : "";
+        m_statusCount->setText(QString("数据条数: %1 %2").arg(n).arg(typeTag));
         m_statusSum->setText(QString("合计: %1").arg(m_dataSource->sum(), 0, 'f', 1));
         m_statusMin->setText(QString("最小值: %1").arg(m_dataSource->minValue(), 0, 'f', 1));
         m_statusMax->setText(QString("最大值: %1").arg(m_dataSource->maxValue(), 0, 'f', 1));

@@ -8,8 +8,8 @@ class LineChart : public Chart
 {
     Q_OBJECT
 public:
-    explicit LineChart(QWidget *parent = 0);
-    LineChart(QString t, QColor c, QWidget *parent = 0);
+    explicit LineChart(QWidget *parent = nullptr);
+    LineChart(QString t, QColor c, QWidget *parent = nullptr);
     virtual void draw(QPainter &painter);
 };
 

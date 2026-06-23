@@ -17,11 +17,11 @@ protected:
     QString title;
     QColor color;
     DataSource *m_dataSource;  // 数据源指针（由外部注入）
-    int m_margin;              // 图表区域四周留白
+    int m_margin = 70;         // 图表区域四周留白
 
 public:
-    explicit Chart(QWidget *parent = 0);
-    Chart(QString t, QColor c, QWidget *parent = 0);
+    explicit Chart(QWidget *parent = nullptr);
+    Chart(QString t, QColor c, QWidget *parent = nullptr);
 
     void setTitle(QString t);
     void setColor(QColor c);
@@ -34,12 +34,8 @@ public:
 
 protected:
     virtual void paintEvent(QPaintEvent *);
-    virtual ~Chart() {}
+    virtual ~Chart() = default;
 
-private slots:
-    void onDataChanged();
-
-protected:
     // ---- 布局辅助 ----
     QRectF chartArea() const;
 

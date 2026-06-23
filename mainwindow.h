@@ -18,11 +18,12 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = 0);
+    explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
 private slots:
     void onLoadFile();
+    void onLoadLabeledFile();
     void onRandomGenerate();
     void onClearData();
     void onChartTypeClicked();
@@ -35,7 +36,7 @@ private:
 
     Ui::MainWindow *ui;
     DataSource *m_dataSource;
-    Chart *m_chartView;
+    Chart *m_chartView = nullptr;
     QList<QPushButton*> m_chartButtons;
 
     // Status bar labels

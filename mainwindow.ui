@@ -98,6 +98,13 @@
         </widget>
        </item>
        <item>
+        <widget class="QPushButton" name="btnLoadLabeled">
+         <property name="text">
+          <string>加载标签文件</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QPushButton" name="btnRandom">
          <property name="text">
           <string> 随机生成</string>
